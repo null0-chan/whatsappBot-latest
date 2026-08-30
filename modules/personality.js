@@ -1,12 +1,7 @@
-/*
-Nama Fitur: Ichan
-License: MIT
-Author: Ichan & Lyra
-*/
 const fs = require("fs")
 const path = require("path")
 
-const file = path.join(__dirname, "dataBase", "personality.json")
+const file = path.join(__dirname, "..", "dataBase", "personality.json")
 
 // Buat file kalau belum ada
 function ensureFile() {
