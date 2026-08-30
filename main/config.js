@@ -84,13 +84,13 @@ module.exports = async (plana, m) => {
     // reply mention
     let repliedToPlana = false
 
-    if (quoted && quotedParticipant && plana.user?.id) {
-         const botIds = [
-             quotedParticipant,
-             plana.user.id
-             ].filter(Boolean)
+    if (quoted && quotedParticipant) {
+        const botId = plana.user?.id
+        const botLid = plana.user?.lid
 
-         repliedToPlana = botIds.some(botId => areJidsSameUser(quotedParticipant, botId))
+        repliedToPlana =
+            (botId && areJidsSameUser(quotedParticipant, botId)) ||
+            (botLid && areJidsSameUser(quotedParticipant, botLid))
     }
 
     // group filter
