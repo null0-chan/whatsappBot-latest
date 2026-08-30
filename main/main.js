@@ -86,7 +86,7 @@ plana.ev.on("connection.update", (update) => {
 
         require("./antiNoisy/antiCall")(plana)
 
-        require("../commands/watching")(plana)
+        require("../modules/watching")(plana)
     }
 })
 

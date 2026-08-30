@@ -34,7 +34,7 @@ async function autoAI(user, userText, quotedText) {
     })
 
     // =============================
-    // Gemini 2.5 Flash
+    //       Gemini 3.5 Flash
     // =============================
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
