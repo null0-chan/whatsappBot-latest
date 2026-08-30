@@ -5,6 +5,7 @@ const { autoAI } = require("./autoAI")
 const { resetMemory } = require("../modules/memory")
 const { convertMp3ToOpus } = require("./tts/convert")
 const { TTSQueue } = require("./tts/queue.js")
+const { areJidsSameUser } = require("@whiskeysockets/baileys")
 
 const ttsQueue = new TTSQueue()
 const VOICE_ID = process.env.ELEVENLABS_VOICE
@@ -65,12 +66,11 @@ module.exports = async (plana, m) => {
     const isCommand = text.startsWith(prefix)
     const isAdmin = (admin.includes(sender))
 
-    // group filter
-    if (!isPrivate && !isMentioned && !isCommand) return
+    const contextInfo = msg.message?.extendedTextMessage?.contextInfo || msg.message?.imageMessage?.contextInfo || msg.message?.videoMessage?.contextInfo
 
-    const userText = text
+    const quoted = contextInfo?.quotedMessage
+    const quotedParticipant = contextInfo?.participant
 
-    const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage
     let quotedText = ""
 
     if (quoted) {
@@ -80,6 +80,23 @@ module.exports = async (plana, m) => {
         quoted.imageMessage?.caption ||
         ""
     }
+
+    // reply mention
+    let repliedToPlana = false
+
+    if (quoted && quotedParticipant && plana.user?.id) {
+         const botIds = [
+             quotedParticipant,
+             plana.user.id
+             ].filter(Boolean)
+
+         repliedToPlana = botIds.some(botId => areJidsSameUser(quotedParticipant, botId))
+    }
+
+    // group filter
+    if (!isPrivate && !isMentioned && !repliedToPlana && !isCommand) return
+
+    const userText = text
 
     // 🔹 Command Handling
     if (isCommand) {
