@@ -1,0 +1,40 @@
+{
+  "Ichan": {
+    "enabled": true,
+    "time": "04:00",
+    "timezone": "Asia/Jakarta",
+    "jid": "62xxxxxxxxxxx@s.whatsapp.net",
+    "schedule": {
+      "senin": [
+        "Matematika",
+        "PAI",
+        "PKN",
+        "SID",
+        "B. Inggris"
+      ],
+      "selasa": [
+        "MP Game 2D XI",
+        "Olahraga",
+        "B. Sunda",
+        "KK PTGM XI"
+      ],
+      "rabu": [
+          "MP WEBP XI",
+          "KIK XI",
+          "B.Indonesia",
+          "PAI"
+      ],
+      "kamis": [
+          "KK WEBP XI",
+          "B. Indonesia",
+          "KK MP XI"
+      ],
+      "jumat": [
+          "KIK XI",
+          "Matematika",
+          "KK BD XI"
+      ],
+      "sabtu": [],
+      "minggu": []
+    }
+}
