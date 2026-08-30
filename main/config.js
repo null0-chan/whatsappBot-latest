@@ -49,6 +49,16 @@ module.exports = async (plana, m) => {
       await plana.readMessages([msg.key])
     } catch {}
 
+    function isOwner(msg) {
+    const senderJid =
+        msg.key?.participant ||
+        msg.key?.remoteJid
+
+    return admin.some(id =>
+        areJidsSameUser(id, senderJid)
+    )
+}
+
     const body =
       msg.message.conversation ||
       msg.message.extendedTextMessage?.text ||
@@ -64,7 +74,7 @@ module.exports = async (plana, m) => {
     const isMentioned = mentionRegex.test(text)
 
     const isCommand = text.startsWith(prefix)
-    const isAdmin = (admin.includes(sender))
+    const isAdmin = isOwner(msg)
 
     const contextInfo = msg.message?.extendedTextMessage?.contextInfo || msg.message?.imageMessage?.contextInfo || msg.message?.videoMessage?.contextInfo
 
