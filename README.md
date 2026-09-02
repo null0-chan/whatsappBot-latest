@@ -83,7 +83,7 @@ PlanaSesi/
 ## Commands
 
 | Command | Description | Permission |
-|---|---|
+|---|---|---|
 | `.cmd` | Show available commands | Everyone |
 | `.chat-on` | Enable AI | Admin/Owner |
 | `.chat-off` | Disable AI | Admin/Owner |
