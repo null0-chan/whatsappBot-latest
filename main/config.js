@@ -229,6 +229,12 @@ module.exports = async (plana, m) => {
     // AI Processing
     const aiResponse = await autoAI(chatJid, userJid, userText, quotedText)
 
+    if (aiResponse?.error) {
+        await plana.sendMessage(chatJid, { text: aiResponse.message }, { quoted: msg })
+
+        return
+    }
+
     await plana.sendPresenceUpdate("paused", chatJid)
 
     if (aiResponse && typeof aiResponse === "string" && !aiResponse.startsWith("⚠️")) {

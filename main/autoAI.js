@@ -59,8 +59,26 @@ async function autoAI(chatJid, userJid, userText, quotedText) {
 
     return reply
   } catch (err) {
-    console.error("❌ Error di autoAI:", err.message)
-    return null
+      const status = err?.status || err?.response?.status || err?.error?.status
+
+      console.error("❌ Error di autoAI:", err.message)
+
+      if (status === 429) {
+          return {
+              error: true,
+              status: 429,
+              message: "Maaf, sepertinya aku sedang tidak bisa menjawab untuk sementara."
+          }
+      }
+      if (status === 503) {
+          return {
+              error: true,
+              status: 503,
+              message: "Aku sedang mengalami sedikit kendala. Coba lagi nanti ya!"
+          }
+      }
+
+      return null
   }
 }
 
