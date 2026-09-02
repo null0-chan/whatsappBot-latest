@@ -1,26 +1,37 @@
 # Plana
 
-*Personal WhatsApp AI Bot built with Node.js, Baileys, Google Gemini, and ElevenLabs.*
+*A personal WhatsApp AI bot built with Node.js, Baileys, Google Gemini, and ElevenLabs.*
 
-![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)
-![Baileys](https://img.shields.io/badge/Baileys-WhatsApp-black)
-![Gemini](https://img.shields.io/badge/Google-Gemini-blue)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org/)
+[![Baileys](https://img.shields.io/badge/Baileys-WhatsApp-black)](https://github.com/WhiskeySockets/Baileys)
+[![Gemini](https://img.shields.io/badge/Google-Gemini-blue)](https://ai.google.dev/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
-Personal WhatsApp automation bot with AI conversation, persistent memory, customizable personality, text-to-speech, and reminders. Built for personal use and experimentation.
+## Overview
+
+Plana is a personal WhatsApp automation bot with AI capabilities, persistent memory, reminders, and text-to-speech.
 
 ## Features
 
-- **AI Chat** — Google Gemini, memory context, quoted message support, group filtering, can be toggled on/off
-- **Memory** — Conversation history stored locally, resettable via `.reset`
-- **TTS** — AI responses converted to voice notes via ElevenLabs (`Gemini → ElevenLabs → FFmpeg → Opus`)
-- **Reminders** — Scheduled reminders/schedule data, stored in `dataBase/reminder.json`
-- **Message handling** — Duplicate protection, per-user lock, quoted message detection, auto read/typing simulation
-- **Group filtering** — Bot only replies in groups when mentioned ("Plana") or given a valid command
+- AI conversations powered by Google Gemini
+- Persistent conversation memory
+- Customizable AI personality
+- Text-to-Speech with ElevenLabs
+- Reminder and school schedule system
+- WhatsApp pairing code authentication
+- Anti-call system
+- Command system
+- Group message filtering
+- Quoted message context
 
 ## Requirements
 
-Node.js 20+, npm, WhatsApp account, Google Gemini API key, FFmpeg (for TTS), ElevenLabs API key (optional, for TTS).
+- Node.js 20+
+- npm
+- WhatsApp account
+- Google Gemini API key
+- ElevenLabs API key (optional)
+- FFmpeg (required for TTS)
 
 ## Installation
 
@@ -30,7 +41,7 @@ cd whatsappBot-latest
 npm install
 ```
 
-Create `.env`:
+Create a `.env` file:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
@@ -38,31 +49,60 @@ ELEVENLABS_KEY=your_elevenlabs_api_key
 ELEVENLABS_VOICE=your_voice_id
 ```
 
-Set the bot owner & prefix in `main/admin.js`:
+Configure the bot owner in:
 
-```js
-global.admin = [ /* your number/lid/g.us */ ]
-global.prefix = "."
+```bash
+main/admin.js
 ```
 
 ## Usage
+
+Start the bot:
 
 ```bash
 npm start
 ```
 
-On first run, scan the WhatsApp pairing code via **Settings → Linked Devices → Link a Device → Link with phone number**. Session data is stored locally in `PlanaSesi/` — do not commit this folder.
+On the first run, Plana will generate a WhatsApp pairing code.
+
+Go to:
+
+WhatsApp
+→ Settings
+→ Linked Devices
+→ Link a Device
+→ Link with phone number
+
+
+The authentication session is stored locally in:
+
+```
+PlanaSesi/
+```
 
 ## Commands
 
-| Command        | Description               | Permission |
-| -------------- | -------------------------- | ---------- |
-| `.cmd`         | Show available commands    | Everyone   |
-| `.chat-on/off` | Enable/disable AI chat     | Admin      |
-| `.chat-status` | Show AI status             | Everyone   |
-| `.tts-on/off`  | Enable/disable TTS         | Admin      |
-| `.tts-status`  | Show TTS status            | Everyone   |
-| `.reset`       | Reset conversation memory  | Everyone   |
+| Command | Description | Permission |
+|---|---|
+| `.cmd` | Show available commands | Everyone |
+| `.chat-on` | Enable AI | Admin/Owner |
+| `.chat-off` | Disable AI | Admin/Owner |
+| `.chat-status` | Show AI status | Everyone |
+| `.tts-on` | Enable TTS | Admin/Owner |
+| `.tts-off` | Disable TTS | Admin/Owner |
+| `.tts-status` | Show TTS status | Everyone |
+| `.reset` | Reset conversation memory | Everyone |
+| `.resetall` | Reset all conversation memories | Admin/Owner |
+
+## Configuration
+
+| File | Purpose |
+|---|---|
+| `main/admin.js` | Admin and command prefix |
+| `dataBase/personality.json` | AI personality |
+| `dataBase/memory.json` | Conversation memory |
+| `dataBase/reminder.json` | Reminder data |
+| `.env` | API credentials |
 
 ## Project Structure
 
@@ -97,27 +137,40 @@ whatsappBot-latest/
 ├── package.json
 └── README.md
 ```
-
 ## Termux (Android)
 
+Plana can run on Android through Termux.
+
 ```bash
-pkg update && pkg install nodejs git ffmpeg
+pkg update
+pkg upgrade
+pkg install nodejs git ffmpeg
+
 git clone https://github.com/null0-chan/whatsappBot-latest.git
-cd whatsappBot-latest && npm install && npm start
+cd whatsappBot-latest
+npm install
+npm start
 ```
 
 ## Security
 
-Never commit `.env` or `PlanaSesi/` — they contain API keys and WhatsApp auth data. Revoke and rotate any exposed key immediately.
+Do not commit sensitive files to the repository:
 
-## Notes
+```
+.env
+PlanaSesi/
+```
 
-Uses Baileys (unofficial WhatsApp library), not the official WhatsApp Business API. Use responsibly — avoid bulk/automated spam messaging.
+These files may contain API credentials and WhatsApp authentication data.
+
+If an API key is exposed, revoke it immediately and generate a new one.
 
 ## License
 
-MIT License
+This project is licensed under the MIT License.
 
 ## Author
 
-**Ichan** — [@null0-chan](https://github.com/null0-chan)
+GitHub: [@null0-chan](https://github.com/null0-chan)
+
+Repository: [whatsappBot-latest](https://github.com/null0-chan/whatsappBot-latest)
