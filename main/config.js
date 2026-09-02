@@ -2,7 +2,7 @@
 require("./admin")
 
 const { autoAI } = require("./autoAI")
-const { resetMemory } = require("../modules/memory")
+const { resetMemory, resetAllMemory } = require("../modules/memory")
 const { convertMp3ToOpus } = require("./tts/convert")
 const { TTSQueue } = require("./tts/queue.js")
 const { areJidsSameUser } = require("@whiskeysockets/baileys")
@@ -22,13 +22,15 @@ module.exports = async (plana, m) => {
   const msg = m?.messages?.[0]
   if (!msg?.message) return
 
-  const sender = msg.key?.remoteJid
-  if (!sender) return
+  const chatJid = msg.key?.remoteJid
+  if (!chatJid) return
 
-  if (msg.key.fromMe || sender === "status@broadcast") return
+  const userJid = msg.key?.participant || chatJid
+
+  if (msg.key.fromMe || chatJid === "status@broadcast") return
 
   const msgId = msg.key.id || ""
-  const processedKey = `${sender}:${msgId}`
+  const processedKey = `${chatJid}:${msgId}`
   const now = Date.now()
   const DUP_WINDOW = 30 * 1000
 
@@ -40,8 +42,9 @@ module.exports = async (plana, m) => {
   if (global.processedMsgIds.has(processedKey)) return
   global.processedMsgIds.set(processedKey, now)
 
-  if (global.userLocks.get(sender)) return
-  global.userLocks.set(sender, true)
+  const lockKey = `${chatJid}:${userJid}`
+  if (global.userLocks.get(lockKey)) return
+  global.userLocks.set(lockKey, true)
 
   try {
     // Status pesan telah dibaca
@@ -56,8 +59,8 @@ module.exports = async (plana, m) => {
 
     return admin.some(id =>
         areJidsSameUser(id, senderJid)
-    )
-}
+        )
+    }
 
     const body =
       msg.message.conversation ||
@@ -69,12 +72,13 @@ module.exports = async (plana, m) => {
     let text = body.trim()
     if (!text) return
 
-    const isPrivate = !sender.endsWith("@g.us")
+    const isPrivate = !chatJid.endsWith("@g.us")
     const mentionRegex = /(^|\s|[,.!?])plana\b/i
     const isMentioned = mentionRegex.test(text)
 
     const isCommand = text.startsWith(prefix)
     const isAdmin = isOwner(msg)
+    const cacheKey = `${chatJid}:${userJid}`
 
     const contextInfo = msg.message?.extendedTextMessage?.contextInfo || msg.message?.imageMessage?.contextInfo || msg.message?.videoMessage?.contextInfo
 
@@ -108,17 +112,18 @@ module.exports = async (plana, m) => {
 
     const userText = text
 
-    // 🔹 Command Handling
+    // Command Handling
     if (isCommand) {
       const command = userText.slice(prefix.length).split(" ")[0].toLowerCase()
 
       switch (command) {
                 case 'cmd':
-                    await plana.sendMessage(sender, {
+                    await plana.sendMessage(chatJid, {
           text:
 ` COMMAND MENU
 ┌───────────────────┐
 │  .reset
+│  .resetall
 │  .chat-on
 │  .chat-off
 │  .tts-on
@@ -132,64 +137,80 @@ module.exports = async (plana, m) => {
 
                 case 'chat-on':
                     if (!isAdmin) {
-                    await plana.sendMessage(sender, {
+                    await plana.sendMessage(chatJid, {
                        text: "Kamu bukan ownerku!"}, { quoted: msg })
                  return
                 }
 
                 global.planaAIEnabled = true
-                await plana.sendMessage(sender, { text: "_Plana online_" }, { quoted: msg })
+                await plana.sendMessage(chatJid, { text: "_Plana online_" }, { quoted: msg })
                     return
 
                 case 'chat-off':
                     if (!isAdmin) {
-                    await plana.sendMessage(sender, {
+                    await plana.sendMessage(chatJid, {
                        text: "Kamu bukan ownerku!"}, { quoted: msg })
                  return
                 }
 
                 global.planaAIEnabled = false
-                await plana.sendMessage(sender, { text: "_Plana offline_" }, { quoted: msg })
+                await plana.sendMessage(chatJid, { text: "_Plana offline_" }, { quoted: msg })
                     return
 
                 case 'tts-on':
                     if (!isAdmin) {
-                    await plana.sendMessage(sender, {
+                    await plana.sendMessage(chatJid, {
                        text: "Kamu bukan ownerku!"}, { quoted: msg })
                  return
                 }
 
                 global.planaTTS = true
-                await plana.sendMessage(sender, { text: "_TTS dinyalakan_"}, { quoted: msg })
+                await plana.sendMessage(chatJid, { text: "_TTS dinyalakan_"}, { quoted: msg })
                     return
 
                 case 'tts-off':
                     if (!isAdmin) {
-                    await plana.sendMessage(sender, {
+                    await plana.sendMessage(chatJid, {
                        text: "Kamu bukan ownerku!"}, { quoted: msg })
                  return
                 }
 
                 global.planaTTS = false
-                await plana.sendMessage(sender, { text: "_TTS dimatikan_"}, { quoted: msg })
+                await plana.sendMessage(chatJid, { text: "_TTS dimatikan_"}, { quoted: msg })
                     return
 
                 // Status check command
                 case 'tts-status': {
                     const status = global.planaTTS ? "Online" : "Offline"
-                    await plana.sendMessage(sender, { text: `📊 TTS Status: ${status}` }, { quoted: msg })
+                    await plana.sendMessage(chatJid, { text: `📊 TTS Status: ${status}` }, { quoted: msg })
                 }
                     return
 
                 case 'chat-status': {
                     const status = global.planaAIEnabled ? "Online" : "Offline"
-                    await plana.sendMessage(sender, { text: `📊 Chat Status: ${status}` }, { quoted: msg })
+                    await plana.sendMessage(chatJid, { text: `📊 Chat Status: ${status}` }, { quoted: msg })
                 }
                     return
 
+                // Reset command
                 case 'reset':
-                    await resetMemory(sender)
-                    await plana.sendMessage(sender, { text: "Memori berhasil dihapus" }, { quoted: msg })
+                    await resetMemory(chatJid, userJid)
+                    await plana.sendMessage(chatJid, { text: "Memori berhasil dihapus" }, { quoted: msg })
+                    return
+
+                case 'resetall':
+                    if (!isAdmin) {
+                        await plana.sendMessage(chatJid, { text: "Kamu bukan ownerku!" }, { quoted: msg })
+                     return
+                    }
+
+                    if (isPrivate) {
+                        await plana.sendMessage(chatJid, { text: "Command ini hanya bisa digunakan didalam grup" }, { quoted: msg })
+                     return
+                    }
+
+                    await resetAllMemory(chatJid)
+                    await plana.sendMessage(chatJid, { text: "Seluruh memory chat berhasil dihapus" }, { quoted: msg })
                     return
 
                 default:
@@ -199,20 +220,20 @@ module.exports = async (plana, m) => {
 
     if (!global.planaAIEnabled) return
 
-    if (cache[sender] && cache[sender][userText]) return
+    if (cache[cacheKey] && cache[cacheKey][userText]) return
 
-    await plana.presenceSubscribe(sender)
-    await plana.sendPresenceUpdate("composing", sender)
+    await plana.presenceSubscribe(chatJid)
+    await plana.sendPresenceUpdate("composing", chatJid)
     await new Promise(r => setTimeout(r, 1200 + Math.random() * 1000))
 
     // AI Processing
-    const aiResponse = await autoAI(sender, userText, quotedText)
+    const aiResponse = await autoAI(chatJid, userJid, userText, quotedText)
 
-    await plana.sendPresenceUpdate("paused", sender)
+    await plana.sendPresenceUpdate("paused", chatJid)
 
     if (aiResponse && typeof aiResponse === "string" && !aiResponse.startsWith("⚠️")) {
 
-      await plana.sendMessage(sender, { text: aiResponse.trim() }, { quoted: msg })
+      await plana.sendMessage(chatJid, { text: aiResponse.trim() }, { quoted: msg })
 
     if (global.planaTTS) {
         try {
@@ -223,7 +244,7 @@ module.exports = async (plana, m) => {
                 try {
                     const opusBuffer = await convertMp3ToOpus(audioBuffer)
     
-                await plana.sendMessage(sender, {
+                await plana.sendMessage(chatJid, {
                   audio: opusBuffer,
                   mimetype: "audio/ogg; codecs=opus",
                   ptt: true
@@ -237,8 +258,8 @@ module.exports = async (plana, m) => {
       }
 
       // save cache
-      if (!cache[sender]) cache[sender] = {}
-      cache[sender][userText] = aiResponse
+      if (!cache[cacheKey]) cache[cacheKey] = {}
+      cache[cacheKey][userText] = aiResponse
 
     } else {
       console.log("⚠️ AI gagal atau null")
@@ -247,6 +268,6 @@ module.exports = async (plana, m) => {
   } catch (err) {
     console.error("Error di plana.js:", err)
   } finally {
-    if (sender) global.userLocks.delete(sender)
+    if (chatJid) global.userLocks.delete(lockKey)
   }
 }

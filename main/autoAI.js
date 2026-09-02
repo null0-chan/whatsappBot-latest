@@ -6,10 +6,10 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.API_KEY
 })
 
-async function autoAI(user, userText, quotedText) {
+async function autoAI(chatJid, userJid, userText, quotedText) {
   try {
     const personality = getPersonality("plana")
-    const history = getMemory(user)
+    const history = getMemory(chatJid, userJid)
     const recentHistory = history.slice(-30)
 
     // Build parts
@@ -54,8 +54,8 @@ async function autoAI(user, userText, quotedText) {
       "⚠️ AI tidak merespons."
 
     // Simpan ke memori
-    addMemory(user, "user", userText.trim())
-    addMemory(user, "ai", reply.trim())
+    addMemory(chatJid, userJid, "user", userText.trim())
+    addMemory(chatJid, userJid, "ai", reply.trim())
 
     return reply
   } catch (err) {

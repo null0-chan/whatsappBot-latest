@@ -4,11 +4,11 @@ const crypto = require("crypto")
 
 const file = path.join(__dirname, "..", "dataBase", "memory.json")
 
-// Baca file/buat baru jika tidak ada
 function loadMemory() {
   if (!fs.existsSync(file)) {
     fs.writeFileSync(file, "{}")
   }
+
   try {
     const data = fs.readFileSync(file, "utf8")
     return JSON.parse(data || "{}")
@@ -18,49 +18,78 @@ function loadMemory() {
   }
 }
 
-// Simpan memori ke file
 function saveMemory(data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2))
 }
 
-// Ambil memori user tertentu
-function getMemory(user) {
-  const mem = loadMemory()
-  return mem[user] || []
+function createSalt() {
+  return crypto.randomBytes(4).toString("hex")
 }
 
-// Tambahin data ke memori user
-function addMemory(user, role, content) {
+// =============================
+//             GET
+// =============================
+function getMemory(chatJid, userJid) {
   const mem = loadMemory()
-  if (!mem[user]) mem[user] = []
 
-  // Tambahkan salt
-  const salt = crypto.randomBytes(4).toString("hex")
-  mem[user].push({ role, content, salt })
+  return mem[chatJid]?.[userJid] || []
+}
+
+// =============================
+//             ADD
+// =============================
+function addMemory(chatJid, userJid, role, content) {
+  const mem = loadMemory()
+
+  if (!mem[chatJid]) {
+    mem[chatJid] = {}
+  }
+
+  if (!mem[chatJid][userJid]) {
+    mem[chatJid][userJid] = []
+  }
+
+  mem[chatJid][userJid].push({
+    role,
+    content,
+    salt: createSalt()
+  })
 
   saveMemory(mem)
 }
 
-// Inject personality ke awal memori user
-function injectPersonality(user, personalityText) {
+// =============================
+//          RESET USER
+// =============================
+function resetMemory(chatJid, userJid) {
   const mem = loadMemory()
 
-  mem[user] = [
-    {
-      role: "system",
-      content: personalityText,
-      salt: crypto.randomBytes(4).toString("hex")
-    }
-  ]
+  if (!mem[chatJid]) return
+
+  delete mem[chatJid][userJid]
+
+  // Kalau sudah tidak ada user
+  if (Object.keys(mem[chatJid]).length === 0) {
+    delete mem[chatJid]
+  }
 
   saveMemory(mem)
 }
 
-// Reset memori user tertentu
-function resetMemory(user) {
+// =============================
+//        RESET ALL CHAT
+// =============================
+function resetAllMemory(chatJid) {
   const mem = loadMemory()
-  delete mem[user]
+
+  delete mem[chatJid]
+
   saveMemory(mem)
 }
 
-module.exports = { getMemory, addMemory, resetMemory, injectPersonality }
+module.exports = {
+  getMemory,
+  addMemory,
+  resetMemory,
+  resetAllMemory
+}
