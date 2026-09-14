@@ -6,7 +6,6 @@ const pino = require("pino")
 const chalk = require("chalk")
 const readline = require("readline")
 const { resolve } = require("path")
-const { version } = require("os")
 
 // TTS
 const { TTSQueue } = require("./tts/queue.js")
@@ -71,7 +70,7 @@ async function connectToWhatsApp() {
 plana.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect } = update
     if (connection === "close") {
-        console.log(chalk.red("Disconnected, trying connect again"))
+        console.log(chalk.red("✖ Disconnected, trying connect again"))
         connectToWhatsApp()
     } else if (connection === "open") {
         console.log(chalk.green("✔ Bot Connected"))
