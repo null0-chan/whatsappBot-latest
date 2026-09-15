@@ -6,6 +6,7 @@ const pino = require("pino")
 const chalk = require("chalk")
 const readline = require("readline")
 const { resolve } = require("path")
+const { Browsers } = require("@whiskeysockets/baileys")
 
 // TTS
 const { TTSQueue } = require("./tts/queue.js")
@@ -13,21 +14,7 @@ const ttsQueue = new TTSQueue()
 
 // Metode Pairing
 const usePairingCode = true
-
-// Prompt Input Terminal
-async function question(promt) {
-    process.stdout.write(promt)
-    const r1 = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    })
-
-    return new Promise((resolve) => r1.question("", (ans) => {
-        r1.close()
-        resolve(ans)
-    }))
-    
-}
+let pairingRequested = false
 
 async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState('./PlanaSesi')
@@ -40,7 +27,7 @@ async function connectToWhatsApp() {
     logger: pino({ level: "silent" }),
     printQRInTerminal: !usePairingCode,
     auth: state,
-    browser: ['Ubuntu', 'Chrome', '20.0.04'],
+    browser: Browsers.ubuntu('Chrome'),//["Ubuntu", "Chrome", "20.0.04"],
     version: version,
     syncFullHistory: true,
     generateHighQualityLinkPreview: true,
@@ -55,12 +42,20 @@ async function connectToWhatsApp() {
 
   // Handle Pairing Code
   if (usePairingCode && !plana.authState.creds.registered) {
+    pairingRequested = true
     try {
-      const phoneNumber = await question('☘️ Input Your Number:\n')
+      const phoneNumber = process.env.PHONE_NUMBER
+
+      if (!phoneNumber) {
+          throw new Error("PHONE_NUMBER belum diatur di file .env")
+      }
+
+      await new Promise(r => setTimeout(r, 1500))
       const code = await plana.requestPairingCode(phoneNumber.trim())
       console.log(`🎁 Pairing Code : ${code}`)
     } catch (err) {
       console.error('Failed get the pairing code:', err)
+      pairingRequested = false
     }
   }
     // Save Login session
@@ -99,7 +94,7 @@ plana.ev.on("connection.update", (update) => {
         const sender = msg.key.remoteJid
         const pushname = msg.pushName || "Plana"
 
-        // Log Message on Terminal
+        // Log Message in Terminal
         const listColor = ["red", "green", "yellow", "magenta", "cyan", "white", "blue"]
         const randomColor = listColor[Math.floor(Math.random() * listColor.length)]
 
