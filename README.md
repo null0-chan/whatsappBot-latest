@@ -47,11 +47,12 @@ Create a `.env` file:
 GEMINI_API_KEY=your_gemini_api_key
 ELEVENLABS_KEY=your_elevenlabs_api_key
 ELEVENLABS_VOICE=your_voice_id
+PHONE_NUMBER=your_number
 ```
 
 Configure the bot owner in:
 
-```bash
+```
 main/admin.js
 ```
 
@@ -106,7 +107,7 @@ PlanaSesi/
 
 ## Project Structure
 
-```bash
+```
 
 whatsappBot-latest/
 │
